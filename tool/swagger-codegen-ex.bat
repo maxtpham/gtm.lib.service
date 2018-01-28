@@ -1,0 +1,1 @@
+java -jar .\swagger-codegen-cli.jar meta -o swagger-codegen-ex/ -n TypeScriptNodeClientCodegen -p mbb.swagger

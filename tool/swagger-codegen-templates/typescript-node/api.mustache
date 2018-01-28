@@ -1,0 +1,148 @@
+{{>licenseInfo}}
+import * as http from 'http';
+import { interfaces } from 'inversify';
+import * as libclient from '@tm/lib.client';
+
+/* tslint:disable:no-unused-variable */
+{{#models}}
+{{#model}}
+{{#description}}
+/**
+* {{{description}}}
+*/
+{{/description}}
+export class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{
+{{#vars}}
+{{#description}}
+    /**
+    * {{{description}}}
+    */
+{{/description}}
+    '{{name}}': {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{datatype}}}{{/isEnum}};
+{{/vars}}
+}
+
+{{#hasEnums}}
+export namespace {{classname}} {
+{{#vars}}
+{{#isEnum}}
+    export enum {{enumName}} {
+        {{#allowableValues}}
+        {{#enumVars}}
+        {{name}} = <any> {{{value}}}{{^-last}},{{/-last}}
+        {{/enumVars}}
+        {{/allowableValues}}
+    }
+{{/isEnum}}
+{{/vars}}
+}
+{{/hasEnums}}
+{{/model}}
+{{/models}}
+
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+{{#description}}
+/**
+* {{&description}}
+*/
+{{/description}}
+export enum {{classname}}ApiKeys {
+{{#authMethods}}
+{{#isApiKey}}
+    {{name}},
+{{/isApiKey}}
+{{/authMethods}}
+}
+
+export class {{classname}} extends libclient.ApiClient {
+    constructor(basePath?: string, accessToken?: string) {
+        super({
+{{#authMethods}}
+{{#isBasic}}
+            '{{name}}': new libclient.HttpBasicAuth(),
+{{/isBasic}}
+{{#isApiKey}}
+            '{{name}}': new libclient.ApiKeyAuth({{#isKeyInHeader}}'header'{{/isKeyInHeader}}{{^isKeyInHeader}}'query'{{/isKeyInHeader}}, '{{keyParamName}}'),
+{{/isApiKey}}
+{{#isOAuth}}
+            '{{name}}': new libclient.OAuth(),
+{{/isOAuth}}
+{{/authMethods}}
+        }, basePath, accessToken);
+    }
+
+    public setApiKey(key: {{classname}}ApiKeys, value: string) {
+        (<libclient.ApiKeyAuth>this.authentications[{{classname}}ApiKeys[key]]).apiKey = value;
+    }
+{{#authMethods}}
+{{#isBasic}}
+    set username(username: string) {
+        (<libclient.HttpBasicAuth>this.authentications.{{name}}).username = username;
+    }
+
+    set password(password: string) {
+        (<libclient.HttpBasicAuth>this.authentications.{{name}}).password = password;
+    }
+{{/isBasic}}
+{{#isOAuth}}
+
+    set accessToken(token: string) {
+        (<libclient.OAuth>this.authentications.{{name}}).accessToken = token;
+    }
+{{/isOAuth}}
+{{^isOAuth}}
+
+    set accessToken(token: string) {
+    }
+{{/isOAuth}}
+{{/authMethods}}
+{{#operation}}
+
+    /**
+     * {{&notes}}
+     {{#summary}}
+     * @summary {{&summary}}
+     {{/summary}}
+     {{#allParams}}* @param {{paramName}} {{description}}
+     {{/allParams}}*/
+    public {{nickname}} ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) : Promise<libclient.ApiResponse<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}any{{/returnType}}>> {
+{{#allParams}}{{#required}}
+        // verify required parameter '{{paramName}}' is not null or undefined
+        if ({{paramName}} === null || {{paramName}} === undefined) {
+            throw new Error('Required parameter {{paramName}} was null or undefined when calling {{nickname}}.');
+        }
+{{/required}}{{/allParams}}        let queryParameters: any = {};
+{{#queryParams}}
+        if ({{paramName}} !== undefined) queryParameters['{{baseName}}'] = {{paramName}};
+{{/queryParams}}
+        let headerParams: any = this.defaultHeaders;
+{{#headerParams}}
+        headerParams['{{baseName}}'] = {{paramName}};
+{{/headerParams}}
+        let isFile = false;
+        let formParams: any = {};
+{{#formParams}}
+        if ({{paramName}} !== undefined) formParams['{{baseName}}'] = {{paramName}};
+{{#isFile}}
+        isFile = true;
+{{/isFile}}
+{{/formParams}}
+        return this.execute<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}any{{/returnType}}>('{{httpMethod}}', '{{{path}}}'{{#pathParams}}.replace('{' + '{{baseName}}' + '}', String({{paramName}})){{/pathParams}},
+            queryParameters, headerParams, formParams, isFile, {{#isResponseFile}}true{{/isResponseFile}}{{^isResponseFile}}false{{/isResponseFile}}, {{#bodyParam}}{{paramName}}{{/bodyParam}}{{^bodyParam}}undefined{{/bodyParam}}{{#authMethods}}, '{{name}}'{{/authMethods}}
+        );
+    }
+{{/operation}}
+}
+{{/operations}}
+{{/apis}}
+
+export function registerIoc(iocContainer: interfaces.Container, basePath: string, token?: string | (() => string)) {
+{{#apis}}
+{{#operations}}
+    libclient.registerApiClient(iocContainer, {{classname}}, {{classname}}, basePath, token);
+{{/operations}}
+{{/apis}}
+}
+{{/apiInfo}}
