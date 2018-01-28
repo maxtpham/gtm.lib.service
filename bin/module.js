@@ -25,7 +25,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
     if (!moduleConfig._name)
         moduleConfig._name = packageJson.name;
     if (!moduleConfig.host)
-        moduleConfig.host = 'localhost';
+        moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
     if (!moduleConfig._url)
         moduleConfig._url = !moduleConfig.port ? 'http://unknown' : `http://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
     if (!moduleConfig._log)
@@ -41,7 +41,12 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
         }
         else {
             if (moduleConfig.port) {
-                app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                if (moduleConfig.host === '+') {
+                    app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                }
+                else {
+                    app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                }
             }
             else {
                 console.warn(`${moduleConfig._log} APPLICATION running ${moduleConfig.util.getConfigSources().map(c => c.name)} without Port number, skip launching the express server`);

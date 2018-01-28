@@ -36,7 +36,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
     if (!moduleConfig._name) moduleConfig._name = packageJson.name;
-    if (!moduleConfig.host) moduleConfig.host = 'localhost';
+    if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
     if (!moduleConfig._url) moduleConfig._url = !moduleConfig.port ? 'http://unknown' : `http://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
     if (!moduleConfig._log) moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
@@ -51,7 +51,11 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
             process.exit(0);
         } else {
             if (moduleConfig.port) {
-                app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                if (moduleConfig.host === '+') {
+                    app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                } else {
+                    app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                }
             }
             else {
                 console.warn(`${moduleConfig._log} APPLICATION running ${moduleConfig.util.getConfigSources().map(c => c.name)} without Port number, skip launching the express server`);
