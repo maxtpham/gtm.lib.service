@@ -76,6 +76,7 @@ let RepositoryImpl = class RepositoryImpl {
                     }
                     resolve(res);
                 });
+                this.Model.findOneAndUpdate();
             });
         });
     }
@@ -93,6 +94,63 @@ let RepositoryImpl = class RepositoryImpl {
                         resolve(res);
                     }
                 });
+            });
+        });
+    }
+    findSpecified(query, specifiedQuery) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.find(query, specifiedQuery, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(res);
+                    }
+                });
+            });
+        });
+    }
+    update(condition, updates) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.update(condition, updates, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(res);
+                    }
+                });
+            });
+        });
+    }
+    findOne(condition) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.findOne(condition, (err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    if (res === null) {
+                        reject();
+                    }
+                    else {
+                        resolve(res);
+                    }
+                });
+            });
+        });
+    }
+    findPagination(query, pageNumber, itemPerPage) {
+        return new Promise((resolve, reject) => {
+            this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(res);
+                }
             });
         });
     }

@@ -10,9 +10,13 @@ export type Query<T> = {
 export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
-    find(query: Query<TEntity>) : Promise<TEntity[]>;
+    find(query: Query<TEntity>): Promise<TEntity[]>;
     findOneById(id: string): Promise<TEntity>;
     findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity): Promise<TEntity>;
+    findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
+    update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
+    findOne(condition: any | TEntity): Promise<TEntity>;
+    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
 }
 
 @injectable()
@@ -20,19 +24,19 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
 
     protected Model: Model<TEntity>;
 
-    constructor (
+    constructor(
         @inject(MongoClientTYPE) mongoclient: MongoClient,
         @unmanaged() name: string,
         @unmanaged() schemaDefinition: SchemaDefinition) {
         this.Model = mongoclient.model<TEntity>(name, new Schema(schemaDefinition, { collection: name }));
     }
 
-    public async findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity){
+    public async findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity) {
         return new Promise<TEntity>((resolve, reject) => {
-            this.Model.findOneAndUpdate(query as any, updates, {upsert: false}, (err, res) =>{
-                if(err){
+            this.Model.findOneAndUpdate(query as any, updates, { upsert: false }, (err, res) => {
+                if (err) {
                     reject(err);
-                }else {
+                } else {
                     resolve(res);
                 }
             });
@@ -63,7 +67,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
         });
     }
 
-    public async find(query: Query<TEntity>) : Promise<TEntity[]> {
+    public async find(query: Query<TEntity>): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
             this.Model.find(query as any, (err, res) => {
                 if (err) {
@@ -71,6 +75,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 }
                 resolve(res);
             });
+
+            this.Model.findOneAndUpdate()
         });
     }
 
@@ -86,6 +92,57 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                     resolve(res);
                 }
             });
+        });
+    }
+
+    public async findSpecified(query: Query<TEntity>, specifiedQuery: any): Promise<TEntity[]> {
+        return new Promise<TEntity[]>((resolve, reject) => {
+            this.Model.find(query as any, specifiedQuery as any, (err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            })
+        })
+    }
+
+    public async update(condition: TEntity, updates: any): Promise<TEntity> {
+        return new Promise<TEntity>((resolve, reject) => {
+            this.Model.update(condition, updates, (err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            })
+        });
+    }
+
+    public async findOne(condition: any): Promise<TEntity> {
+        return new Promise<TEntity>((resolve, reject) => {
+            this.Model.findOne(condition, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                if (res === null) {
+                    reject();
+                } else {
+                    resolve(res);
+                }
+            });
+        });
+    }
+
+    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]> {
+        return new Promise<TEntity[]>((resolve, reject) => {
+            this.Model.find(query as any).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            })
         });
     }
 }
