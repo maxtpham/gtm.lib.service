@@ -125,6 +125,26 @@ let RepositoryImpl = class RepositoryImpl {
             });
         });
     }
+    findOneOrCreate(condition, creator) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.findOne(condition, (err, res) => __awaiter(this, void 0, void 0, function* () {
+                    if (err) {
+                        reject(err);
+                    }
+                    if (!res) {
+                        res = yield this.save(yield creator());
+                    }
+                    if (!res) {
+                        reject();
+                    }
+                    else {
+                        resolve(res);
+                    }
+                }));
+            });
+        });
+    }
     findOne(condition) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {

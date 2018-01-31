@@ -11,6 +11,7 @@ export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
     find(query: Query<TEntity>): Promise<TEntity[]>;
+    findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOneById(id: string): Promise<TEntity>;
     findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity): Promise<TEntity>;
     findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
@@ -119,6 +120,24 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
         });
     }
 
+    public async findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity> {
+        return new Promise<TEntity>((resolve, reject) => {
+            this.Model.findOne(condition, async (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                if (!res) {
+                    res = await this.save(await creator());
+                }
+                if (!res) {
+                    reject();
+                } else {
+                    resolve(res);
+                }
+            });
+        });
+    }
+    
     public async findOne(condition: any): Promise<TEntity> {
         return new Promise<TEntity>((resolve, reject) => {
             this.Model.findOne(condition, (err, res) => {

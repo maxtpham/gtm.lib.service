@@ -10,6 +10,7 @@ export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
     find(query: Query<TEntity>): Promise<TEntity[]>;
+    findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOneById(id: string): Promise<TEntity>;
     findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity): Promise<TEntity>;
     findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
@@ -27,6 +28,7 @@ export declare class RepositoryImpl<TEntity extends DbEntity & Document> impleme
     findOneById(id: string): Promise<TEntity>;
     findSpecified(query: Query<TEntity>, specifiedQuery: any): Promise<TEntity[]>;
     update(condition: TEntity, updates: any): Promise<TEntity>;
+    findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOne(condition: any): Promise<TEntity>;
     findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
 }
