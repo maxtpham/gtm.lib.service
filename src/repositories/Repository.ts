@@ -17,7 +17,7 @@ export interface Repository<TEntity> {
     findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
     update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
     findOne(condition: any | TEntity): Promise<TEntity>;
-    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
 }
 
 @injectable()
