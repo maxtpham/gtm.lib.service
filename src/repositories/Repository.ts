@@ -161,7 +161,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 } else {
                     resolve(res);
                 }
-            })
+            });
         });
     }
 
@@ -173,7 +173,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 } else {
                     resolve(count);
                 }
-            })
-        })
+            });
+        });
     }
 }
