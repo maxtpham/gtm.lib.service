@@ -2,7 +2,7 @@ import * as mongoose from "mongoose";
 import { interfaces } from "inversify";
 import { IModuleConfig } from "../module";
 export declare type MongoClient = mongoose.Mongoose;
-export declare const MongoClientTYPE: symbol;
+export declare const MongoClientTYPE: unique symbol;
 export interface IMongoConfig {
     /** Connection string: mongodb://localhost/test */
     mongo: string;

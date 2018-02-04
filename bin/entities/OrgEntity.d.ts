@@ -9,17 +9,17 @@ export declare const OrgSchema: {
         required: boolean;
     };
     created: {
-        type: typeof mongoose.Schema.Types.Date;
+        type: typeof mongoose.Schema.Types.Number;
         required: boolean;
         default: () => number;
     };
     updated: {
-        type: typeof mongoose.Schema.Types.Date;
+        type: typeof mongoose.Schema.Types.Number;
         required: boolean;
         default: () => number;
     };
     deleted: {
-        type: typeof mongoose.Schema.Types.Date;
+        type: typeof mongoose.Schema.Types.Number;
         required: boolean;
     };
 };
