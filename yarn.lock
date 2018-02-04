@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@tm/lib.common@git+ssh://git@github.com/thanhptr/tm.lib.common.git":
+"@tm/lib.common@thanhptr/tm.lib.common":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/thanhptr/tm.lib.common.git#ae53d95dd73eb33f5e52ba80f0b3ea4dbcd816d0"
+  resolved "https://codeload.github.com/thanhptr/tm.lib.common/tar.gz/f8b07922bfa6860d4e2c1540a52be58c6ea78c1d"
   dependencies:
     inversify "^4.10.0"
     inversify-binding-decorators "^3.2.0"

@@ -29,7 +29,7 @@
     "typescript": "^2.7.1"
   },
   "dependencies": {
-    "@tm/lib.common": "git+ssh://git@github.com/thanhptr/tm.lib.common.git",
+    "@tm/lib.common": "thanhptr/tm.lib.common",
     "body-parser": "^1.18.2",
     "config": "^1.29.4",
     "cookie-parser": "^1.4.3",
