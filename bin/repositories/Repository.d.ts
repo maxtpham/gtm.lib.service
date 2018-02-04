@@ -17,6 +17,7 @@ export interface Repository<TEntity> {
     update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
     findOne(condition: any | TEntity): Promise<TEntity>;
     findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    count(condition: any | TEntity): Promise<number>;
 }
 export declare class RepositoryImpl<TEntity extends DbEntity & Document> implements Repository<TEntity> {
     protected Model: Model<TEntity>;
@@ -31,4 +32,5 @@ export declare class RepositoryImpl<TEntity extends DbEntity & Document> impleme
     findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOne(condition: any): Promise<TEntity>;
     findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    count(condition: any): Promise<number>;
 }

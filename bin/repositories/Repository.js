@@ -163,14 +163,30 @@ let RepositoryImpl = class RepositoryImpl {
         });
     }
     findPagination(query, pageNumber, itemPerPage) {
-        return new Promise((resolve, reject) => {
-            this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(res);
-                }
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(res);
+                    }
+                });
+            });
+        });
+    }
+    count(condition) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.count(condition, (err, count) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(count);
+                    }
+                });
             });
         });
     }

@@ -18,11 +18,11 @@ export interface Repository<TEntity> {
     update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
     findOne(condition: any | TEntity): Promise<TEntity>;
     findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    count(condition: any | TEntity): Promise<number>;
 }
 
 @injectable()
 export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repository<TEntity> {
-
     protected Model: Model<TEntity>;
 
     constructor(
@@ -137,7 +137,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             });
         });
     }
-    
+
     public async findOne(condition: any): Promise<TEntity> {
         return new Promise<TEntity>((resolve, reject) => {
             this.Model.findOne(condition, (err, res) => {
@@ -153,7 +153,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
         });
     }
 
-    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]> {
+    public async findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
             this.Model.find(query as any).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
                 if (err) {
@@ -163,5 +163,17 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 }
             })
         });
+    }
+
+    public async count(condition: any): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            this.Model.count(condition, (err, count) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(count);
+                }
+            })
+        })
     }
 }
