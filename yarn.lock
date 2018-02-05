@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@tm/lib.common@thanhptr/tm.lib.common":
-  version "1.0.0"
-  resolved "https://codeload.github.com/thanhptr/tm.lib.common/tar.gz/f8b07922bfa6860d4e2c1540a52be58c6ea78c1d"
+"@gtm/lib.common@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@gtm/lib.common/-/lib.common-1.0.9.tgz#1b73e310f7911a3524e540ea054ab7d682848b8f"
   dependencies:
     inversify "^4.10.0"
     inversify-binding-decorators "^3.2.0"

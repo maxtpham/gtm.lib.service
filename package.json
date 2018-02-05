@@ -1,5 +1,5 @@
 {
-  "name": "@tm/lib.service",
+  "name": "@gtm/lib.service",
   "version": "1.0.0",
   "description": "Common library for MBB services",
   "main": "bin/index.js",
@@ -8,14 +8,14 @@
     "clean": "rimraf bin/*",
     "build": "yarn run clean && yarn && tsc",
     "b": "yarn run build",
-    "prepublishOnly": "yarn version patch && yarn run build",
-    "p": "yarn publish --access public"
+    "prepublishOnly": "npm version patch && yarn run build && git push origin",
+    "p": "npm publish --access public"
   },
   "keywords": [],
   "author": "MyBestBook.NET",
   "license": "UNLICENSED",
   "repository": {
-    "url": "https://github.com/thanhptr/tm.lib.service.git"
+    "url": "https://github.com/thanhptr/gtm.lib.service.git"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.8",
@@ -29,7 +29,7 @@
     "typescript": "^2.7.1"
   },
   "dependencies": {
-    "@tm/lib.common": "thanhptr/tm.lib.common",
+    "@gtm/lib.common": "^1.0.9",
     "body-parser": "^1.18.2",
     "config": "^1.29.4",
     "cookie-parser": "^1.4.3",
