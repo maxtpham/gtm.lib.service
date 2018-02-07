@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 function expressAuthentication(request, securityName, requestedScopes) {
     if (securityName === 'jwt') {
-        const userScopes = !!request.user ? (request.user.scope || []) : undefined;
+        const userScopes = !!request.user && !request.user['$'] ? (request.user.scope || []) : undefined;
         return new Promise((resolve, reject) => {
             if (typeof userScopes === 'undefined') {
                 const err = new Error("Not logged in or Invalid user session");

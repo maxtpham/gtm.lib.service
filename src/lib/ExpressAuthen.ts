@@ -5,7 +5,7 @@ import * as express from "express";
  */
 export function expressAuthentication(request: express.Request, securityName: string, requestedScopes?: string[]): Promise<any> {
     if (securityName === 'jwt') {
-        const userScopes = !!(<any>request).user ? (<string[]>(<any>request).user.scope || []) : undefined;
+        const userScopes = !!(<any>request).user && !(<any>request).user['$'] ? (<string[]>(<any>request).user.scope || []) : undefined;
         return new Promise((resolve, reject) => {
             if (typeof userScopes === 'undefined') {
                 const err = new Error("Not logged in or Invalid user session");
