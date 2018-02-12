@@ -10,7 +10,7 @@ export type Query<T> = {
 export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
-    find(query: Query<TEntity>): Promise<TEntity[]>;
+    find(query: any | Query<TEntity>): Promise<TEntity[]>;
     findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOneById(id: string): Promise<TEntity>;
     findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity): Promise<TEntity>;
