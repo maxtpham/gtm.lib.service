@@ -1,7 +1,9 @@
 import * as mongoose from "mongoose";
-import { Entity } from "./Entity";
+import { View, Entity } from "./Entity";
 export declare const DefaultMongoClientTYPE: unique symbol;
-export interface DbEntity extends Entity {
+export interface DbView extends View {
+}
+export interface DbEntity extends Entity, DbView {
     _id: any;
     created?: number;
     updated?: number;
@@ -23,3 +25,6 @@ export declare const DbSchema: {
         required: boolean;
     };
 };
+export declare module DbEntity {
+    function toView(entity: DbEntity): DbView;
+}

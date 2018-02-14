@@ -1,4 +1,4 @@
-export * from "./entities/index";
-export * from "./lib/index";
-export * from "./repositories/index";
+export * from "./entities";
+export * from "./lib";
+export * from "./repositories";
 export * from "./module";

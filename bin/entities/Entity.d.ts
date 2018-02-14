@@ -1,2 +1,4 @@
-export interface Entity {
+export interface View {
+}
+export interface Entity extends View {
 }
