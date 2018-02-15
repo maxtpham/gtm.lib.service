@@ -1,5 +1,5 @@
-/// <reference types="node" />
 import * as mongoose from "mongoose";
+import { Binary } from "bson";
 export interface LocationView {
     /** longitude */
     x: number;
@@ -11,7 +11,7 @@ export interface AttachmentView {
      * This will be return to browser client to correctly load & show the image  */
     media: string;
     /** Image raw/binary Content-Data will be stramming to browser client */
-    data: Buffer;
+    data: Binary;
 }
 export declare const LocationSchema: {
     x: {

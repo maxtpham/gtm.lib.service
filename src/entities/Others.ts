@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
 import { DbView } from "./DbEntity";
+import { Binary } from "bson";
 
 export interface LocationView {
     /** longitude */
@@ -14,7 +15,7 @@ export interface AttachmentView {
     media: string;
 
     /** Image raw/binary Content-Data will be stramming to browser client */
-    data: Buffer;
+    data: Binary;
 }
 
 export const LocationSchema = {
