@@ -87,8 +87,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 if (err) {
                     reject(err);
                 }
-                if (res === null) {
-                    reject();
+                if (!res) {
+                    reject('Entity not found');
                 } else {
                     resolve(res);
                 }
@@ -130,7 +130,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                     res = await this.save(await creator());
                 }
                 if (!res) {
-                    reject();
+                    reject('Entity not found');
                 } else {
                     resolve(res);
                 }
@@ -144,8 +144,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 if (err) {
                     reject(err);
                 }
-                if (res === null) {
-                    reject();
+                if (!res) {
+                    reject('Entity not found');
                 } else {
                     resolve(res);
                 }

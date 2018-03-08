@@ -87,8 +87,8 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    if (res === null) {
-                        reject();
+                    if (!res) {
+                        reject('Entity not found');
                     }
                     else {
                         resolve(res);
@@ -136,7 +136,7 @@ let RepositoryImpl = class RepositoryImpl {
                         res = yield this.save(yield creator());
                     }
                     if (!res) {
-                        reject();
+                        reject('Entity not found');
                     }
                     else {
                         resolve(res);
@@ -152,8 +152,8 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    if (res === null) {
-                        reject();
+                    if (!res) {
+                        reject('Entity not found');
                     }
                     else {
                         resolve(res);
