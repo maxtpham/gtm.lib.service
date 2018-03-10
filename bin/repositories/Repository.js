@@ -87,12 +87,7 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    if (!res) {
-                        reject('Entity not found');
-                    }
-                    else {
-                        resolve(res);
-                    }
+                    resolve(res);
                 });
             });
         });
@@ -104,9 +99,7 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    else {
-                        resolve(res);
-                    }
+                    resolve(res);
                 });
             });
         });
@@ -118,9 +111,7 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    else {
-                        resolve(res);
-                    }
+                    resolve(res);
                 });
             });
         });
@@ -135,9 +126,6 @@ let RepositoryImpl = class RepositoryImpl {
                     if (!res) {
                         res = yield this.save(yield creator());
                     }
-                    if (!res) {
-                        reject('Entity not found');
-                    }
                     else {
                         resolve(res);
                     }
@@ -151,9 +139,6 @@ let RepositoryImpl = class RepositoryImpl {
                 this.Model.findOne(condition, (err, res) => {
                     if (err) {
                         reject(err);
-                    }
-                    if (!res) {
-                        reject('Entity not found');
                     }
                     else {
                         resolve(res);

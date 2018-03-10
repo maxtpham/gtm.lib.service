@@ -87,11 +87,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 if (err) {
                     reject(err);
                 }
-                if (!res) {
-                    reject('Entity not found');
-                } else {
-                    resolve(res);
-                }
+                resolve(res);
             });
         });
     }
@@ -101,9 +97,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.find(query as any, specifiedQuery as any, (err, res) => {
                 if (err) {
                     reject(err);
-                } else {
-                    resolve(res);
                 }
+                resolve(res);
             })
         })
     }
@@ -113,9 +108,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.update(condition, updates, (err, res) => {
                 if (err) {
                     reject(err);
-                } else {
-                    resolve(res);
                 }
+                resolve(res);
             })
         });
     }
@@ -128,9 +122,6 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 }
                 if (!res) {
                     res = await this.save(await creator());
-                }
-                if (!res) {
-                    reject('Entity not found');
                 } else {
                     resolve(res);
                 }
@@ -143,9 +134,6 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.findOne(condition, (err, res) => {
                 if (err) {
                     reject(err);
-                }
-                if (!res) {
-                    reject('Entity not found');
                 } else {
                     resolve(res);
                 }
