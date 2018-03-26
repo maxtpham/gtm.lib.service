@@ -70,7 +70,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
 
     public async find(query: Query<TEntity>): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
-            this.Model.find(query as any, (err, res) => {
+            this.Model.find(query as any).sort('-updated').exec((err, res) => {
                 if (err) {
                     reject(err);
                 }
@@ -94,7 +94,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
 
     public async findSpecified(query: Query<TEntity>, specifiedQuery: any): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
-            this.Model.find(query as any, specifiedQuery as any, (err, res) => {
+            this.Model.find(query as any, specifiedQuery as any).sort('-updated').exec((err, res) => {
                 if (err) {
                     reject(err);
                 }
@@ -143,7 +143,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
 
     public async findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
-            this.Model.find(query as any).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
+            this.Model.find(query as any).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).sort('-updated').exec((err, res) => {
                 if (err) {
                     reject(err);
                 } else {
