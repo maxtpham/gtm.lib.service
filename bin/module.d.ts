@@ -8,6 +8,13 @@ export interface IModuleConfig extends IConfig {
     host?: string;
     /** The Express.js port number, if null the Express.js app will not be started (disable) */
     port?: number;
+    /** Enable SSL support */
+    https?: {
+        /** Relative path to pfx file */
+        pfx?: string;
+        /** Password for the pfx file */
+        passphrase?: string;
+    };
     /** The module package version */
     _version: string;
     /** The module package name */
