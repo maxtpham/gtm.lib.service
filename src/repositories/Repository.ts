@@ -19,6 +19,7 @@ export interface Repository<TEntity> {
     findOne(condition: any | TEntity): Promise<TEntity>;
     findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
     count(condition: any | TEntity): Promise<number>;
+    findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
 
 @injectable()
@@ -161,6 +162,17 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
                 } else {
                     resolve(count);
                 }
+            });
+        });
+    }
+
+    public async findAndGetOneById(id: string, filedName: string): Promise<TEntity> {
+        return new Promise<TEntity>((resolve, reject) => {
+            this.Model.findById(id).select(filedName).exec((err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(res);
             });
         });
     }

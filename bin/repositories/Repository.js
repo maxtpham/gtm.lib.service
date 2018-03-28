@@ -175,6 +175,18 @@ let RepositoryImpl = class RepositoryImpl {
             });
         });
     }
+    findAndGetOneById(id, filedName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.findById(id).select(filedName).exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(res);
+                });
+            });
+        });
+    }
 };
 RepositoryImpl = __decorate([
     inversify_1.injectable(),
