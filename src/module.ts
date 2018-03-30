@@ -1,5 +1,7 @@
 import * as path from "path";
+import * as fs from "fs";
 import * as express from "express";
+import * as https from "https";
 import { interfaces } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import * as bodyparser from "body-parser";
@@ -10,12 +12,20 @@ import { DefaultMongoClientTYPE } from "./entities/DbEntity";
 import { IMongoConfig, registerMongoClient } from "./lib/MongoClient";
 import { ExpressError } from "./lib/ExpressError";
 import { DynamicCors } from "./lib/DynamicCors";
+import { promisify } from "util";
 
 export interface IModuleConfig extends IConfig {
     /** The Express.js hostname, if null the Express.js app will use localhost */
     host?: string;
     /** The Express.js port number, if null the Express.js app will not be started (disable) */
     port?: number;
+    /** Enable SSL support */
+    https?: {
+        /** Relative path to pfx file */
+        pfx?: string;
+        /** Password for the pfx file */
+        passphrase?: string;
+    }
     /** The module package version */
     _version: string;
     /** The module package name */
@@ -37,7 +47,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
     if (!moduleConfig._name) moduleConfig._name = packageJson.name;
     if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
-    if (!moduleConfig._url) moduleConfig._url = !moduleConfig.port ? 'http://unknown' : `http://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
+    if (!moduleConfig._url) moduleConfig._url = !moduleConfig.port ? `${!!moduleConfig.https ? 'https' : 'http'}://unknown` : `${!!moduleConfig.https ? 'https' : 'http'}://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
     if (!moduleConfig._log) moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
 
@@ -51,10 +61,32 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
             process.exit(0);
         } else {
             if (moduleConfig.port) {
-                if (moduleConfig.host === '+') {
-                    app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                if (!!moduleConfig.https) {
+                    const pfxPath = path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../' : '../', moduleConfig.https.pfx);
+                    let pfxData: Buffer;
+                    try {
+                        pfxData = await promisify(fs.readFile)(pfxPath);
+                    } catch (e) {
+                        console.warn(`${moduleConfig._log} could not read PFX at ${pfxPath}, skip launching the express server`);
+                        process.exit(0);
+                    }
+                    if (!!pfxData) {
+                        const server = https.createServer({
+                            pfx: pfxData,
+                            passphrase: moduleConfig.https.passphrase,
+                        }, app);
+                        if (moduleConfig.host === '+') {
+                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        } else {
+                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        }
+                    }
                 } else {
-                    app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                    if (moduleConfig.host === '+') {
+                        app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                    } else {
+                        app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                    }
                 }
             }
             else {

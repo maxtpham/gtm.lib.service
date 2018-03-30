@@ -74,7 +74,7 @@ let RepositoryImpl = class RepositoryImpl {
     find(query) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                this.Model.find(query, (err, res) => {
+                this.Model.find(query).sort({ updated: -1 }).exec((err, res) => {
                     if (err) {
                         reject(err);
                     }
@@ -102,7 +102,7 @@ let RepositoryImpl = class RepositoryImpl {
     findSpecified(query, specifiedQuery) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                this.Model.find(query, specifiedQuery, (err, res) => {
+                this.Model.find(query, specifiedQuery).sort({ updated: -1 }).exec((err, res) => {
                     if (err) {
                         reject(err);
                     }
@@ -161,7 +161,7 @@ let RepositoryImpl = class RepositoryImpl {
     findPagination(query, pageNumber, itemPerPage) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
+                this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).sort({ updated: -1 }).exec((err, res) => {
                     if (err) {
                         reject(err);
                     }
@@ -182,6 +182,18 @@ let RepositoryImpl = class RepositoryImpl {
                     else {
                         resolve(count);
                     }
+                });
+            });
+        });
+    }
+    findAndGetOneById(id, filedName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.Model.findById(id).select(filedName).exec((err, res) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(res);
                 });
             });
         });

@@ -18,6 +18,7 @@ export interface Repository<TEntity> {
     findOne(condition: any | TEntity): Promise<TEntity>;
     findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
     count(condition: any | TEntity): Promise<number>;
+    findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
 export declare class RepositoryImpl<TEntity extends DbEntity & Document> implements Repository<TEntity> {
     protected Model: Model<TEntity>;
@@ -33,4 +34,5 @@ export declare class RepositoryImpl<TEntity extends DbEntity & Document> impleme
     findOne(condition: any): Promise<TEntity>;
     findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
     count(condition: any): Promise<number>;
+    findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
