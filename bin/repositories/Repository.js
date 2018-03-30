@@ -49,7 +49,9 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
             });
         });
@@ -62,7 +64,9 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
             });
         });
@@ -74,9 +78,10 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
-                this.Model.findOneAndUpdate();
             });
         });
     }
@@ -87,7 +92,9 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
             });
         });
@@ -99,7 +106,9 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
             });
         });
@@ -111,7 +120,9 @@ let RepositoryImpl = class RepositoryImpl {
                     if (err) {
                         reject(err);
                     }
-                    resolve(res);
+                    else {
+                        resolve(res);
+                    }
                 });
             });
         });

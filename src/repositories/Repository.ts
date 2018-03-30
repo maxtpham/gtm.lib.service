@@ -50,8 +50,9 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             instance.save((err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             });
         });
     }
@@ -62,8 +63,9 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             instance.remove((err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             });
         });
     }
@@ -73,11 +75,10 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.find(query as any, (err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             });
-
-            this.Model.findOneAndUpdate()
         });
     }
 
@@ -86,8 +87,9 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.findById(id, (err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             });
         });
     }
@@ -97,8 +99,9 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.find(query as any, specifiedQuery as any, (err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             })
         })
     }
@@ -108,8 +111,9 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
             this.Model.update(condition, updates, (err, res) => {
                 if (err) {
                     reject(err);
+                } else {
+                    resolve(res);
                 }
-                resolve(res);
             })
         });
     }
