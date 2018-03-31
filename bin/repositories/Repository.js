@@ -158,10 +158,11 @@ let RepositoryImpl = class RepositoryImpl {
             });
         });
     }
-    findPagination(query, pageNumber, itemPerPage) {
+    findPagination(query, pageNumber, itemPerPage, sort) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                this.Model.find(query).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).sort({ updated: -1 }).exec((err, res) => {
+                let sortObj = sort && sort.name ? { [sort.name]: sort.type, "updated": sort.type } : { "updated": sort.type };
+                this.Model.find(query).sort(sortObj).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
                     if (err) {
                         reject(err);
                     }

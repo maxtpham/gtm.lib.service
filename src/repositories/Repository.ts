@@ -7,6 +7,13 @@ export type Query<T> = {
     [P in keyof T]?: T[P] | { $regex: RegExp };
 };
 
+export type SortType = 1 | -1;
+
+export type Sort = {
+    name: string;
+    type: SortType;
+};
+
 export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
@@ -17,7 +24,7 @@ export interface Repository<TEntity> {
     findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
     update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
     findOne(condition: any | TEntity): Promise<TEntity>;
-    findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number, sort?: Sort): Promise<TEntity[]>;
     count(condition: any | TEntity): Promise<number>;
     findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
@@ -146,9 +153,10 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
         });
     }
 
-    public async findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]> {
+    public async findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number, sort?: Sort): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
-            this.Model.find(query as any).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).sort({ updated: -1 }).exec((err, res) => {
+            let sortObj = sort && sort.name ? { [sort.name]: sort.type, "updated": sort.type } : { "updated": sort.type };
+            this.Model.find(query as any).sort(sortObj).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
                 if (err) {
                     reject(err);
                 } else {

@@ -6,6 +6,11 @@ export declare type Query<T> = {
         $regex: RegExp;
     };
 };
+export declare type SortType = 1 | -1;
+export declare type Sort = {
+    name: string;
+    type: SortType;
+};
 export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
@@ -16,7 +21,7 @@ export interface Repository<TEntity> {
     findSpecified(query: Query<TEntity>, specifiedQuery: any | TEntity): Promise<TEntity[]>;
     update(condition: any | TEntity, updates: any | TEntity): Promise<TEntity>;
     findOne(condition: any | TEntity): Promise<TEntity>;
-    findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    findPagination(query: any | TEntity, pageNumber: number, itemPerPage: number, sort?: Sort): Promise<TEntity[]>;
     count(condition: any | TEntity): Promise<number>;
     findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
@@ -32,7 +37,7 @@ export declare class RepositoryImpl<TEntity extends DbEntity & Document> impleme
     update(condition: TEntity, updates: any): Promise<TEntity>;
     findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOne(condition: any): Promise<TEntity>;
-    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number): Promise<TEntity[]>;
+    findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number, sort?: Sort): Promise<TEntity[]>;
     count(condition: any): Promise<number>;
     findAndGetOneById(id: string, filedName: string): Promise<TEntity>;
 }
