@@ -155,7 +155,7 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
 
     public async findPagination(query: Query<TEntity>, pageNumber: number, itemPerPage: number, sort?: Sort): Promise<TEntity[]> {
         return new Promise<TEntity[]>((resolve, reject) => {
-            let sortObj = sort && sort.name ? { [sort.name]: sort.type, "updated": sort.type } : { "updated": sort.type };
+            let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
             this.Model.find(query as any).sort(sortObj).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
                 if (err) {
                     reject(err);

@@ -161,7 +161,7 @@ let RepositoryImpl = class RepositoryImpl {
     findPagination(query, pageNumber, itemPerPage, sort) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                let sortObj = sort && sort.name ? { [sort.name]: sort.type, "updated": sort.type } : { "updated": sort.type };
+                let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
                 this.Model.find(query).sort(sortObj).skip((pageNumber - 1) * itemPerPage).limit(itemPerPage).exec((err, res) => {
                     if (err) {
                         reject(err);
