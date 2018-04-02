@@ -29,8 +29,36 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
         moduleConfig._name = packageJson.name;
     if (!moduleConfig.host)
         moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
-    if (!moduleConfig._url)
-        moduleConfig._url = !moduleConfig.port ? `${!!moduleConfig.https ? 'https' : 'http'}://unknown` : `${!!moduleConfig.https ? 'https' : 'http'}://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
+    if (!moduleConfig.port) {
+        if (!moduleConfig._url)
+            moduleConfig._url = 'http://unknown';
+        if (!!moduleConfig.https) {
+            if (!moduleConfig.https._url)
+                moduleConfig.https._url = 'https://unknown';
+        }
+    }
+    else {
+        if (!!moduleConfig.https) {
+            if (!!moduleConfig.https.port) {
+                if (!moduleConfig.https._url)
+                    moduleConfig.https._url = moduleConfig.https.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.https.port}`;
+                if (!moduleConfig._url) {
+                    if (moduleConfig.https.port === moduleConfig.port) {
+                        moduleConfig._url = moduleConfig.https._url;
+                    }
+                    else {
+                        moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
+                    }
+                }
+            }
+            else {
+                if (!moduleConfig.https._url)
+                    moduleConfig.https._url = moduleConfig.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.port}`;
+                if (!moduleConfig._url)
+                    moduleConfig._url = moduleConfig.https._url;
+            }
+        }
+    }
     if (!moduleConfig._log)
         moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
@@ -60,14 +88,14 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
                             passphrase: moduleConfig.https.passphrase,
                         }, app);
                         if (moduleConfig.host === '+') {
-                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         }
                         else {
-                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         }
                     }
                 }
-                else {
+                if (!moduleConfig.https || (!!moduleConfig.https.port && moduleConfig.https.port !== moduleConfig.port)) {
                     if (moduleConfig.host === '+') {
                         app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     }
@@ -111,6 +139,7 @@ function init(iocContainer, moduleConfig, mongoConfig, creating, created) {
 }
 function create(app, config, iocContainer) {
     // Register express.js middlewares
+    app.use(bodyparser({ limit: '50mb' }));
     app.use(bodyparser.urlencoded({ extended: true }));
     app.use(bodyparser.json());
     app.use(cookieparser());

@@ -21,10 +21,14 @@ export interface IModuleConfig extends IConfig {
     port?: number;
     /** Enable SSL support */
     https?: {
+        /** Optional HTTPS port number, if null the default port, if available & differ to default port, both server will be started */
+        port?: number;
         /** Relative path to pfx file */
         pfx?: string;
         /** Password for the pfx file */
         passphrase?: string;
+        /** HTTPS Url */
+        _url?: string;
     }
     /** The module package version */
     _version: string;
@@ -47,7 +51,28 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
     if (!moduleConfig._name) moduleConfig._name = packageJson.name;
     if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
-    if (!moduleConfig._url) moduleConfig._url = !moduleConfig.port ? `${!!moduleConfig.https ? 'https' : 'http'}://unknown` : `${!!moduleConfig.https ? 'https' : 'http'}://${moduleConfig.host}${moduleConfig.port === 80 ? '' : (':' + moduleConfig.port)}`;
+    if (!moduleConfig.port) {
+        if (!moduleConfig._url) moduleConfig._url = 'http://unknown';
+        if (!!moduleConfig.https) {
+            if (!moduleConfig.https._url) moduleConfig.https._url = 'https://unknown';
+        }
+    } else {
+        if (!!moduleConfig.https) {
+            if (!!moduleConfig.https.port) {
+                if (!moduleConfig.https._url) moduleConfig.https._url = moduleConfig.https.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.https.port}`;
+                if (!moduleConfig._url) {
+                    if (moduleConfig.https.port === moduleConfig.port) {
+                        moduleConfig._url = moduleConfig.https._url;
+                    } else {
+                        moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
+                    }
+                }
+            } else {
+                if (!moduleConfig.https._url) moduleConfig.https._url = moduleConfig.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.port}`;
+                if (!moduleConfig._url) moduleConfig._url = moduleConfig.https._url;
+            }
+        }
+    }
     if (!moduleConfig._log) moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
 
@@ -76,12 +101,13 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
                             passphrase: moduleConfig.https.passphrase,
                         }, app);
                         if (moduleConfig.host === '+') {
-                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         } else {
-                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         }
                     }
-                } else {
+                }
+                if (!moduleConfig.https || (!!moduleConfig.https.port && moduleConfig.https.port !== moduleConfig.port)) {
                     if (moduleConfig.host === '+') {
                         app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     } else {
@@ -124,6 +150,7 @@ async function init(iocContainer: interfaces.Container, moduleConfig: IModuleCon
 
 function create(app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container): void {
     // Register express.js middlewares
+    app.use(bodyparser({limit: '50mb'}));
     app.use(bodyparser.urlencoded({ extended: true }));
     app.use(bodyparser.json());
     app.use(cookieparser());

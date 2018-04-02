@@ -10,10 +10,14 @@ export interface IModuleConfig extends IConfig {
     port?: number;
     /** Enable SSL support */
     https?: {
+        /** Optional HTTPS port number, if null the default port, if available & differ to default port, both server will be started */
+        port?: number;
         /** Relative path to pfx file */
         pfx?: string;
         /** Password for the pfx file */
         passphrase?: string;
+        /** HTTPS Url */
+        _url?: string;
     };
     /** The module package version */
     _version: string;
