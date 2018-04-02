@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs = require("fs");
 const express = require("express");
+const http = require("http");
 const https = require("https");
 const inversify_express_utils_1 = require("inversify-express-utils");
 const bodyparser = require("body-parser");
@@ -98,11 +99,12 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
                     }
                 }
                 if (!moduleConfig.https || (!!moduleConfig.https.port && moduleConfig.https.port !== moduleConfig.port)) {
+                    const server = http.createServer(app);
                     if (moduleConfig.host === '+') {
-                        app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     }
                     else {
-                        app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     }
                 }
             }
@@ -141,9 +143,8 @@ function init(iocContainer, moduleConfig, mongoConfig, creating, created) {
 }
 function create(app, config, iocContainer) {
     // Register express.js middlewares
-    app.use(bodyparser({ limit: '50mb' }));
-    app.use(bodyparser.urlencoded({ extended: true }));
-    app.use(bodyparser.json());
+    app.use(bodyparser.urlencoded({ extended: true, limit: '50mb' }));
+    app.use(bodyparser.json({ limit: '50mb' }));
     app.use(cookieparser());
     // CORS
     if (config.cors && config.cors.length > 0) {

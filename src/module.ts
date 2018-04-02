@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as express from "express";
+import * as http from "http";
 import * as https from "https";
 import { interfaces } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
@@ -109,10 +110,11 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
                     }
                 }
                 if (!moduleConfig.https || (!!moduleConfig.https.port && moduleConfig.https.port !== moduleConfig.port)) {
+                    const server = http.createServer(app);
                     if (moduleConfig.host === '+') {
-                        app.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     } else {
-                        app.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
                     }
                 }
             }
@@ -151,9 +153,8 @@ async function init(iocContainer: interfaces.Container, moduleConfig: IModuleCon
 
 function create(app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container): void {
     // Register express.js middlewares
-    app.use(bodyparser({limit: '50mb'}));
-    app.use(bodyparser.urlencoded({ extended: true }));
-    app.use(bodyparser.json());
+    app.use(bodyparser.urlencoded({ extended: true, limit: '50mb' }));
+    app.use(bodyparser.json({ limit: '50mb' }));
     app.use(cookieparser());
 
     // CORS
