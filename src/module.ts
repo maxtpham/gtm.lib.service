@@ -47,6 +47,7 @@ export type InitAppFunction =
 
 /** should provide __dirname & default module config */
 export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction) {
+    if (process.env.NODE_ENV !== 'production') process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
     const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
     if (!moduleConfig._name) moduleConfig._name = packageJson.name;
@@ -101,9 +102,9 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
                             passphrase: moduleConfig.https.passphrase,
                         }, app);
                         if (moduleConfig.host === '+') {
-                            server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
+                            server.listen(moduleConfig.https.port || moduleConfig.port, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         } else {
-                            server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
+                            server.listen(moduleConfig.https.port || moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
                         }
                     }
                 }
