@@ -52,7 +52,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
     if (!moduleConfig._name) moduleConfig._name = packageJson.name;
-    if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
+    if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV === 'production' ? 'localhost' : '+');
     if (!moduleConfig.port) {
         if (!moduleConfig._url) moduleConfig._url = 'http://unknown';
         if (!!moduleConfig.https) {
@@ -73,6 +73,8 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
                 if (!moduleConfig.https._url) moduleConfig.https._url = moduleConfig.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.port}`;
                 if (!moduleConfig._url) moduleConfig._url = moduleConfig.https._url;
             }
+        } else {
+            if (!moduleConfig._url) moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
         }
     }
     if (!moduleConfig._log) moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;

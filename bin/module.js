@@ -31,7 +31,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
     if (!moduleConfig._name)
         moduleConfig._name = packageJson.name;
     if (!moduleConfig.host)
-        moduleConfig.host = (process.env.NODE_ENV == 'production' ? 'localhost' : '+');
+        moduleConfig.host = (process.env.NODE_ENV === 'production' ? 'localhost' : '+');
     if (!moduleConfig.port) {
         if (!moduleConfig._url)
             moduleConfig._url = 'http://unknown';
@@ -60,6 +60,10 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
                 if (!moduleConfig._url)
                     moduleConfig._url = moduleConfig.https._url;
             }
+        }
+        else {
+            if (!moduleConfig._url)
+                moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
         }
     }
     if (!moduleConfig._log)
