@@ -7,6 +7,7 @@ class DynamicCors {
     }
     static allowAll(req, res, next) {
         res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS');
         res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         next();
     }
@@ -14,6 +15,7 @@ class DynamicCors {
         if (req.method === 'OPTIONS') {
             if (!!req.headers && !!req.headers.origin && this.domains[req.headers.origin]) {
                 res.header('Access-Control-Allow-Origin', req.headers.origin);
+                res.header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS');
                 res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
             }
             res.sendStatus(204);
@@ -24,6 +26,7 @@ class DynamicCors {
             }
             else if (this.domains[req.headers.origin]) {
                 res.header('Access-Control-Allow-Origin', req.headers.origin);
+                res.header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS');
                 res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
                 next();
             }
