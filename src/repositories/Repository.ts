@@ -17,7 +17,7 @@ export type Sort = {
 export interface Repository<TEntity> {
     save(doc: TEntity): Promise<TEntity>;
     remove(doc: TEntity): Promise<TEntity>;
-    find(query: any | Query<TEntity>): Promise<TEntity[]>;
+    find(query: any | Query<TEntity>, sort?: Sort): Promise<TEntity[]>;
     findOneOrCreate(condition: any | TEntity, creator: () => Promise<TEntity>): Promise<TEntity>;
     findOneById(id: string): Promise<TEntity>;
     findOneAndUpdate(query: Query<TEntity>, updates: any | TEntity): Promise<TEntity>;
@@ -78,9 +78,10 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
         });
     }
 
-    public async find(query: Query<TEntity>): Promise<TEntity[]> {
+    public async find(query: Query<TEntity>, sort?: Sort): Promise<TEntity[]> {
+        let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
         return new Promise<TEntity[]>((resolve, reject) => {
-            this.Model.find(query as any).sort({ updated: -1 }).exec((err, res) => {
+            this.Model.find(query as any).sort(sortObj).exec((err, res) => {
                 if (err) {
                     reject(err);
                 } else {

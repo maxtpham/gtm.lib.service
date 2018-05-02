@@ -71,10 +71,11 @@ let RepositoryImpl = class RepositoryImpl {
             });
         });
     }
-    find(query) {
+    find(query, sort) {
         return __awaiter(this, void 0, void 0, function* () {
+            let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
             return new Promise((resolve, reject) => {
-                this.Model.find(query).sort({ updated: -1 }).exec((err, res) => {
+                this.Model.find(query).sort(sortObj).exec((err, res) => {
                     if (err) {
                         reject(err);
                     }
