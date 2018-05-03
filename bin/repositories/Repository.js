@@ -73,8 +73,8 @@ let RepositoryImpl = class RepositoryImpl {
     }
     find(query, sort) {
         return __awaiter(this, void 0, void 0, function* () {
-            let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
             return new Promise((resolve, reject) => {
+                let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
                 this.Model.find(query).sort(sortObj).exec((err, res) => {
                     if (err) {
                         reject(err);

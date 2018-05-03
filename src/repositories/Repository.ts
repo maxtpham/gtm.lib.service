@@ -79,8 +79,8 @@ export class RepositoryImpl<TEntity extends DbEntity & Document> implements Repo
     }
 
     public async find(query: Query<TEntity>, sort?: Sort): Promise<TEntity[]> {
-        let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
         return new Promise<TEntity[]>((resolve, reject) => {
+            let sortObj = sort && sort.name ? { [sort.name]: sort.type } : { "updated": -1 };
             this.Model.find(query as any).sort(sortObj).exec((err, res) => {
                 if (err) {
                     reject(err);
