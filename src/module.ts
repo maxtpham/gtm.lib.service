@@ -14,6 +14,7 @@ import { IMongoConfig, registerMongoClient } from "./lib/MongoClient";
 import { ExpressError } from "./lib/ExpressError";
 import { DynamicCors } from "./lib/DynamicCors";
 import { promisify } from "util";
+import * as iocapi from "./lib/IocApi";
 
 export interface IModuleConfig extends IConfig {
     /** The Express.js hostname, if null the Express.js app will use localhost */
@@ -46,8 +47,16 @@ export interface IModuleConfig extends IConfig {
 export type InitAppFunction =
     (app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container) => Promise<void>;
 
+export type ApiIocRegister =
+    (iocContainer: interfaces.Container, basePath: string, token?: string | (() => string)) => void;
+
+export interface IApiIocRegistrationInfo {
+    url: string;
+    register: ApiIocRegister;
+}
+
 /** should provide __dirname & default module config */
-export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction) {
+export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, ...apis: IApiIocRegistrationInfo[]) {
     if (process.env.NODE_ENV !== 'production') process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
     const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
     if (!moduleConfig._version) moduleConfig._version = packageJson.version;
@@ -82,7 +91,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
 
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
     
-    init(iocContainer, moduleConfig, mongoConfig, creating, created)
+    init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
     .then(async app => {
         if (!!test) {
             await test(app, moduleConfig, iocContainer);
@@ -132,7 +141,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     });
 }
 
-async function init(iocContainer: interfaces.Container, moduleConfig: IModuleConfig, mongoConfig?: IMongoConfig, creating?: InitAppFunction, created?: InitAppFunction): Promise<express.Application> {
+async function init(iocContainer: interfaces.Container, moduleConfig: IModuleConfig, mongoConfig?: IMongoConfig, creating?: InitAppFunction, created?: InitAppFunction, apis?: IApiIocRegistrationInfo[]): Promise<express.Application> {
     if (mongoConfig && mongoConfig.mongo) {
         await registerMongoClient(iocContainer, moduleConfig, mongoConfig, DefaultMongoClientTYPE);
     }
@@ -142,7 +151,7 @@ async function init(iocContainer: interfaces.Container, moduleConfig: IModuleCon
     if (creating) {
         await creating(app, moduleConfig, iocContainer);
     }
-    create(app, moduleConfig, iocContainer);
+    create(app, moduleConfig, iocContainer, apis);
     if (created) {
         await created(app, moduleConfig, iocContainer);
     }
@@ -153,7 +162,7 @@ async function init(iocContainer: interfaces.Container, moduleConfig: IModuleCon
     }).build();
 }
 
-function create(app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container): void {
+function create(app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container, apis?: IApiIocRegistrationInfo[]): void {
     // Register express.js middlewares
     app.use(bodyparser.urlencoded({ extended: true, limit: '50mb' }));
     app.use(bodyparser.json({ limit: '50mb' }));
@@ -165,6 +174,14 @@ function create(app: express.Application, config: IModuleConfig, iocContainer: i
             app.use(DynamicCors.allowAll); // Allow all origin
         } else {
             app.use(new DynamicCors(config.cors).handle); // Allow only specific domain (dynamically)
+        }
+    }
+
+    // Register API IoC
+    if (apis && apis.length > 0) {
+        iocapi.register(app);
+        for (let i = 0, l = apis.length; i < l; i++) {
+            apis[i].register(iocContainer, apis[i].url, iocapi.getIocJwt);
         }
     }
 }

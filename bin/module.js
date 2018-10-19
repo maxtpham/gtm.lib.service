@@ -21,8 +21,9 @@ const MongoClient_1 = require("./lib/MongoClient");
 const ExpressError_1 = require("./lib/ExpressError");
 const DynamicCors_1 = require("./lib/DynamicCors");
 const util_1 = require("util");
+const iocapi = require("./lib/IocApi");
 /** should provide __dirname & default module config */
-function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, creating) {
+function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, creating, ...apis) {
     if (process.env.NODE_ENV !== 'production')
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
     const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
@@ -70,7 +71,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
         moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
-    init(iocContainer, moduleConfig, mongoConfig, creating, created)
+    init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
         .then((app) => __awaiter(this, void 0, void 0, function* () {
         if (!!test) {
             yield test(app, moduleConfig, iocContainer);
@@ -124,7 +125,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
     });
 }
 exports.main = main;
-function init(iocContainer, moduleConfig, mongoConfig, creating, created) {
+function init(iocContainer, moduleConfig, mongoConfig, creating, created, apis) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mongoConfig && mongoConfig.mongo) {
             yield MongoClient_1.registerMongoClient(iocContainer, moduleConfig, mongoConfig, DbEntity_1.DefaultMongoClientTYPE);
@@ -134,7 +135,7 @@ function init(iocContainer, moduleConfig, mongoConfig, creating, created) {
         if (creating) {
             yield creating(app, moduleConfig, iocContainer);
         }
-        create(app, moduleConfig, iocContainer);
+        create(app, moduleConfig, iocContainer, apis);
         if (created) {
             yield created(app, moduleConfig, iocContainer);
         }
@@ -145,7 +146,7 @@ function init(iocContainer, moduleConfig, mongoConfig, creating, created) {
         }).build();
     });
 }
-function create(app, config, iocContainer) {
+function create(app, config, iocContainer, apis) {
     // Register express.js middlewares
     app.use(bodyparser.urlencoded({ extended: true, limit: '50mb' }));
     app.use(bodyparser.json({ limit: '50mb' }));
@@ -157,6 +158,13 @@ function create(app, config, iocContainer) {
         }
         else {
             app.use(new DynamicCors_1.DynamicCors(config.cors).handle); // Allow only specific domain (dynamically)
+        }
+    }
+    // Register API IoC
+    if (apis && apis.length > 0) {
+        iocapi.register(app);
+        for (let i = 0, l = apis.length; i < l; i++) {
+            apis[i].register(iocContainer, apis[i].url, iocapi.getIocJwt);
         }
     }
 }
