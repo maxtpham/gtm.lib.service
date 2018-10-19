@@ -1,6 +1,6 @@
 {
   "name": "@gtm/lib.service",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "Common library for MBB services",
   "main": "bin/index.js",
   "typings": "bin/index",
