@@ -1,5 +1,22 @@
 import * as express from "express";
 import { IModuleConfig } from "../module";
+import { HttpCodes } from "./HttpCodes";
+
+export class HttpError {
+    private status: number;
+    private data?: any;
+
+    constructor(status: number, data?: any) {
+        this.status = status;
+        this.data = data;
+    }
+
+    public handle(req: express.Request, res: express.Response, next: express.NextFunction): boolean {
+        res.status(this.status);
+        res.send(this.data || HttpCodes.Map[this.status] || `HttpError-${this.status}`);
+        return true;
+    }
+}
 
 /**
  * The last Express.js app routes to handle the error.
@@ -17,6 +34,8 @@ export class ExpressError {
     }
 
     private _handler(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+        if ((err instanceof HttpError) && (<HttpError>err).handle(req, res, next)) return;
+
         if (!res.statusCode || (res.statusCode >= 200 && res.statusCode < 300)) {
             res.status(err.status || err.statusCode || 500);
         }
