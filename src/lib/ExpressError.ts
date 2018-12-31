@@ -1,5 +1,5 @@
 import * as express from "express";
-import { IModuleConfig } from "../module";
+import { IModuleConfig } from "./ModuleConfig";
 import { HttpCodes } from "./HttpCodes";
 
 export class HttpError {

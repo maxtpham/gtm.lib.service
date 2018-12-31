@@ -8,41 +8,14 @@ import { InversifyExpressServer } from 'inversify-express-utils';
 import * as bodyparser from "body-parser";
 import * as cookieparser from "cookie-parser";
 
-import { IConfig } from "config";
+import { IModuleConfig, normalizeModuleConfig } from "./lib/ModuleConfig";
 import { DefaultMongoClientTYPE } from "./entities/DbEntity";
-import { IMongoConfig, registerMongoClient } from "./lib/MongoClient";
+import { IMongoConfig, normalizeMongoConfig } from "./lib/MongoConfig";
+import { registerMongoClient } from "./lib/MongoClient";
 import { ExpressError } from "./lib/ExpressError";
 import { DynamicCors } from "./lib/DynamicCors";
 import { promisify } from "util";
 import * as iocapi from "./lib/IocApi";
-
-export interface IModuleConfig extends IConfig {
-    /** The Express.js hostname, if null the Express.js app will use localhost */
-    host?: string;
-    /** The Express.js port number, if null the Express.js app will not be started (disable) */
-    port?: number;
-    /** Enable SSL support */
-    https?: {
-        /** Optional HTTPS port number, if null the default port, if available & differ to default port, both server will be started */
-        port?: number;
-        /** Relative path to pfx file */
-        pfx?: string;
-        /** Password for the pfx file */
-        passphrase?: string;
-        /** HTTPS Url */
-        _url?: string;
-    }
-    /** The module package version */
-    _version: string;
-    /** The module package name */
-    _name: string;
-    /** The Express.js Url */
-    _url?: string;
-    /** The logname */
-    _log?: string;
-    /** The list of CORS enabled domains */
-    cors: string[];
-}
 
 export type InitAppFunction =
     (app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container) => Promise<void>;
@@ -57,38 +30,11 @@ export interface IApiIocRegistrationInfo {
 
 /** should provide __dirname & default module config */
 export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, ...apis: IApiIocRegistrationInfo[]) {
-    if (process.env.NODE_ENV !== 'production') process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
-    const packageJson = require(path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../package.json' : '../package.json'));
-    if (!moduleConfig._version) moduleConfig._version = packageJson.version;
-    if (!moduleConfig._name) moduleConfig._name = packageJson.name;
-    if (!moduleConfig.host) moduleConfig.host = (process.env.NODE_ENV === 'production' ? 'localhost' : '+');
-    if (!moduleConfig.port) {
-        if (!moduleConfig._url) moduleConfig._url = 'http://unknown';
-        if (!!moduleConfig.https) {
-            if (!moduleConfig.https._url) moduleConfig.https._url = 'https://unknown';
-        }
-    } else {
-        if (!!moduleConfig.https) {
-            if (!!moduleConfig.https.port) {
-                if (!moduleConfig.https._url) moduleConfig.https._url = moduleConfig.https.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.https.port}`;
-                if (!moduleConfig._url) {
-                    if (moduleConfig.https.port === moduleConfig.port) {
-                        moduleConfig._url = moduleConfig.https._url;
-                    } else {
-                        moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
-                    }
-                }
-            } else {
-                if (!moduleConfig.https._url) moduleConfig.https._url = moduleConfig.port === 443 ? `https://${moduleConfig.host}` : `https://${moduleConfig.host}:${moduleConfig.port}`;
-                if (!moduleConfig._url) moduleConfig._url = moduleConfig.https._url;
-            }
-        } else {
-            if (!moduleConfig._url) moduleConfig._url = moduleConfig.port === 80 ? `http://${moduleConfig.host}` : `http://${moduleConfig.host}:${moduleConfig.port}`;
-        }
-    }
-    if (!moduleConfig._log) moduleConfig._log = `[${moduleConfig._name}@${moduleConfig._version}]`;
-    console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
+    moduleConfig = normalizeModuleConfig(dirname, moduleConfig);
+    mongoConfig = normalizeMongoConfig(mongoConfig);
 
+    if (process.env.NODE_ENV !== 'production') process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
+    console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
     
     init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)

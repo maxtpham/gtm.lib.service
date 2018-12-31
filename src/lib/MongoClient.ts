@@ -1,17 +1,11 @@
 import * as mongoose from "mongoose";
 import { interfaces } from "inversify";
-import { IModuleConfig } from "../module";
+import { IModuleConfig } from "./ModuleConfig";
+import { IMongoConfig } from "./MongoConfig";
 
 export type MongoClient = mongoose.Mongoose;
 
 export const MongoClientTYPE = Symbol("MongoClient");
-
-export interface IMongoConfig {
-    /** Connection string: mongodb://localhost/test */
-    mongo: string;
-    /** Using testWithMockgo */
-    mocko?: boolean;
-}
 
 export async function createMongoClient(moduleConfig: IModuleConfig, connectionString: string) {
     return new Promise<MongoClient>((resolve, reject) => {

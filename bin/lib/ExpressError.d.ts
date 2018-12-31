@@ -1,5 +1,5 @@
 import * as express from "express";
-import { IModuleConfig } from "../module";
+import { IModuleConfig } from "./ModuleConfig";
 export declare class HttpError {
     private status;
     private data?;
