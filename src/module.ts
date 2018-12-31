@@ -5,6 +5,7 @@ import * as http from "http";
 import * as https from "https";
 import { interfaces } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
+import { buildProviderModule } from 'inversify-binding-decorators';
 import * as bodyparser from "body-parser";
 import * as cookieparser from "cookie-parser";
 
@@ -37,6 +38,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
     
+    iocContainer.load(buildProviderModule());
     init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
     .then(async app => {
         if (!!test) {

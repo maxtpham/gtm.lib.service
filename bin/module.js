@@ -14,6 +14,7 @@ const express = require("express");
 const http = require("http");
 const https = require("https");
 const inversify_express_utils_1 = require("inversify-express-utils");
+const inversify_binding_decorators_1 = require("inversify-binding-decorators");
 const bodyparser = require("body-parser");
 const cookieparser = require("cookie-parser");
 const ModuleConfig_1 = require("./lib/ModuleConfig");
@@ -32,6 +33,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
+    iocContainer.load(inversify_binding_decorators_1.buildProviderModule());
     init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
         .then((app) => __awaiter(this, void 0, void 0, function* () {
         if (!!test) {
