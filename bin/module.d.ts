@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from "express";
 import { interfaces } from 'inversify';
 import { IConfig } from "config";

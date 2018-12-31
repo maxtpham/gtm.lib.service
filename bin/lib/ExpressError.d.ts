@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from "express";
 import { IModuleConfig } from "../module";
 export declare class HttpError {
@@ -15,5 +14,5 @@ export declare class ExpressError {
     private config;
     constructor(config: IModuleConfig);
     readonly handler: express.RequestHandler;
-    private _handler(err, req, res, next);
+    private _handler;
 }
