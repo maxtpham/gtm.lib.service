@@ -46,11 +46,13 @@ export class ExpressError {
                 delete (<Error>err).stack;
             }
         } else {
-            console.error(`${this.config._log} HTTP.ERROR-${res.statusCode} ${req.method} ${req.originalUrl} ${(typeof(err) === 'string' ? err : err instanceof Error ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : JSON.stringify(err)).replace('\n', '|')}`);
+            //console.error(`${this.config._log} HTTP.ERROR-${res.statusCode} ${req.method} ${req.originalUrl} ${(typeof(err) === 'string' ? err : err instanceof Error ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : JSON.stringify(err)).replace('\n', '|')}`);
+            console.error(`${this.config._log} HTTP.ERROR-${res.statusCode} ${req.method} ${req.originalUrl}`, err);
         }
         res.send({
             request: `${req.method} ${req.originalUrl}`,
-            error: err instanceof Error ? JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))) : err
+            //error: err instanceof Error ? JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))) : err
+            error: err
         });
     }
 }
