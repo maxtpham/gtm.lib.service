@@ -30,7 +30,7 @@ export interface IApiIocRegistrationInfo {
 }
 
 /** should provide __dirname & default module config */
-export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, ...apis: IApiIocRegistrationInfo[]) {
+export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, errorConfigCb?: (app: express.Application) => void, ...apis: IApiIocRegistrationInfo[]) {
     moduleConfig = normalizeModuleConfig(dirname, moduleConfig);
     mongoConfig = normalizeMongoConfig(mongoConfig);
 
@@ -39,7 +39,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
     
     iocContainer.load(buildProviderModule());
-    init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
+    init(iocContainer, moduleConfig, mongoConfig, creating, created, errorConfigCb, apis)
     .then(async app => {
         if (!!test) {
             await test(app, moduleConfig, iocContainer);
@@ -89,7 +89,7 @@ export function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: 
     });
 }
 
-async function init(iocContainer: interfaces.Container, moduleConfig: IModuleConfig, mongoConfig?: IMongoConfig, creating?: InitAppFunction, created?: InitAppFunction, apis?: IApiIocRegistrationInfo[]): Promise<express.Application> {
+async function init(iocContainer: interfaces.Container, moduleConfig: IModuleConfig, mongoConfig?: IMongoConfig, creating?: InitAppFunction, created?: InitAppFunction, errorConfigCb?: (app: express.Application) => void, apis?: IApiIocRegistrationInfo[]): Promise<express.Application> {
     if (mongoConfig && mongoConfig.mongo) {
         await registerMongoClient(iocContainer, moduleConfig, mongoConfig, DefaultMongoClientTYPE);
     }
@@ -103,11 +103,11 @@ async function init(iocContainer: interfaces.Container, moduleConfig: IModuleCon
     if (created) {
         await created(app, moduleConfig, iocContainer);
     }
-    return server.setErrorConfig(a => {
+    return server.setErrorConfig(errorConfigCb || (a => {
         // Finally handle the error
         // It's important that this come after the main routes are registered
         a.use(new ExpressError(moduleConfig).handler);
-    }).build();
+    })).build();
 }
 
 function create(app: express.Application, config: IModuleConfig, iocContainer: interfaces.Container, apis?: IApiIocRegistrationInfo[]): void {

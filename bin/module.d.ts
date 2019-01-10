@@ -9,4 +9,4 @@ export interface IApiIocRegistrationInfo {
     register: ApiIocRegister;
 }
 /** should provide __dirname & default module config */
-export declare function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, ...apis: IApiIocRegistrationInfo[]): void;
+export declare function main(dirname: string, moduleConfig: IModuleConfig, mongoConfig: IMongoConfig, iocContainer: interfaces.Container, test?: InitAppFunction, created?: InitAppFunction, creating?: InitAppFunction, errorConfigCb?: (app: express.Application) => void, ...apis: IApiIocRegistrationInfo[]): void;

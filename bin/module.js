@@ -26,7 +26,7 @@ const DynamicCors_1 = require("./lib/DynamicCors");
 const util_1 = require("util");
 const iocapi = require("./lib/IocApi");
 /** should provide __dirname & default module config */
-function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, creating, ...apis) {
+function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, creating, errorConfigCb, ...apis) {
     moduleConfig = ModuleConfig_1.normalizeModuleConfig(dirname, moduleConfig);
     mongoConfig = MongoConfig_1.normalizeMongoConfig(mongoConfig);
     if (process.env.NODE_ENV !== 'production')
@@ -34,7 +34,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
     console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
     console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
     iocContainer.load(inversify_binding_decorators_1.buildProviderModule());
-    init(iocContainer, moduleConfig, mongoConfig, creating, created, apis)
+    init(iocContainer, moduleConfig, mongoConfig, creating, created, errorConfigCb, apis)
         .then((app) => __awaiter(this, void 0, void 0, function* () {
         if (!!test) {
             yield test(app, moduleConfig, iocContainer);
@@ -88,7 +88,7 @@ function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, c
     });
 }
 exports.main = main;
-function init(iocContainer, moduleConfig, mongoConfig, creating, created, apis) {
+function init(iocContainer, moduleConfig, mongoConfig, creating, created, errorConfigCb, apis) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mongoConfig && mongoConfig.mongo) {
             yield MongoClient_1.registerMongoClient(iocContainer, moduleConfig, mongoConfig, DbEntity_1.DefaultMongoClientTYPE);
@@ -102,11 +102,11 @@ function init(iocContainer, moduleConfig, mongoConfig, creating, created, apis) 
         if (created) {
             yield created(app, moduleConfig, iocContainer);
         }
-        return server.setErrorConfig(a => {
+        return server.setErrorConfig(errorConfigCb || (a => {
             // Finally handle the error
             // It's important that this come after the main routes are registered
             a.use(new ExpressError_1.ExpressError(moduleConfig).handler);
-        }).build();
+        })).build();
     });
 }
 function create(app, config, iocContainer, apis) {
