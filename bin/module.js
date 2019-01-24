@@ -25,109 +25,116 @@ const ExpressError_1 = require("./lib/ExpressError");
 const DynamicCors_1 = require("./lib/DynamicCors");
 const util_1 = require("util");
 const iocapi = require("./lib/IocApi");
+const HealthHandler_1 = require("./lib/HealthHandler");
 /** should provide __dirname & default module config */
-function main(dirname, moduleConfig, mongoConfig, iocContainer, test, created, creating, errorConfigCb, ...apis) {
-    moduleConfig = ModuleConfig_1.normalizeModuleConfig(dirname, moduleConfig);
-    mongoConfig = MongoConfig_1.normalizeMongoConfig(mongoConfig);
+function main(args) {
+    args.moduleConfig = ModuleConfig_1.normalizeModuleConfig(args.projectRoot, args.moduleConfig);
+    args.mongoConfig = MongoConfig_1.normalizeMongoConfig(args.mongoConfig);
     if (process.env.NODE_ENV !== 'production')
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Allows SSL on Dev mode
-    console.log(`${moduleConfig._log} CONFIG ${moduleConfig.util.getConfigSources().map(c => c.name)}`, moduleConfig);
-    console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
-    iocContainer.load(inversify_binding_decorators_1.buildProviderModule());
-    init(iocContainer, moduleConfig, mongoConfig, creating, created, errorConfigCb, apis)
-        .then((app) => __awaiter(this, void 0, void 0, function* () {
-        if (!!test) {
-            yield test(app, moduleConfig, iocContainer);
-            console.log(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} END!`);
+    console.log(`${args.moduleConfig._log} CONFIG ${args.moduleConfig.util.getConfigSources().map(c => c.name)}`, args.moduleConfig);
+    console.log(`${args.moduleConfig._log} ${!!args.test ? 'UNIT-TEST' : 'APPLICATION'} STARTING..`);
+    args.iocContainer.load(inversify_binding_decorators_1.buildProviderModule());
+    init(args).then((app) => __awaiter(this, void 0, void 0, function* () {
+        if (!!args.test) {
+            yield args.test(app, args.moduleConfig, args.iocContainer);
+            console.log(`${args.moduleConfig._log} ${!!args.test ? 'UNIT-TEST' : 'APPLICATION'} END!`);
             process.exit(0);
         }
         else {
-            if (moduleConfig.port) {
-                if (!!moduleConfig.https) {
-                    const pfxPath = path.resolve(dirname, process.env.NODE_ENV === 'production' ? '../../' : '../', moduleConfig.https.pfx);
+            if (args.moduleConfig.port) {
+                if (!!args.moduleConfig.https) {
+                    const pfxPath = path.resolve(args.projectRoot, process.env.NODE_ENV === 'production' ? '../../' : '../', args.moduleConfig.https.pfx);
                     let pfxData;
                     try {
                         pfxData = yield util_1.promisify(fs.readFile)(pfxPath);
                     }
                     catch (e) {
-                        console.warn(`${moduleConfig._log} could not read PFX at ${pfxPath}, skip launching the express server`);
+                        console.warn(`${args.moduleConfig._log} could not read PFX at ${pfxPath}, skip launching the express server`);
                         process.exit(0);
                     }
                     if (!!pfxData) {
                         const server = https.createServer({
                             pfx: pfxData,
-                            passphrase: moduleConfig.https.passphrase,
+                            passphrase: args.moduleConfig.https.passphrase,
                         }, app);
-                        if (moduleConfig.host === '+') {
-                            server.listen(moduleConfig.https.port || moduleConfig.port, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
+                        if (args.moduleConfig.host === '+') {
+                            server.listen(args.moduleConfig.https.port || args.moduleConfig.port, () => console.log(`${args.moduleConfig._log} HTTPS server started ${args.moduleConfig.https._url}`));
                         }
                         else {
-                            server.listen(moduleConfig.https.port || moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} HTTPS server started ${moduleConfig.https._url}`));
+                            server.listen(args.moduleConfig.https.port || args.moduleConfig.port, args.moduleConfig.host, () => console.log(`${args.moduleConfig._log} HTTPS server started ${args.moduleConfig.https._url}`));
                         }
                     }
                 }
-                if (!moduleConfig.https || (!!moduleConfig.https.port && moduleConfig.https.port !== moduleConfig.port)) {
+                if (!args.moduleConfig.https || (!!args.moduleConfig.https.port && args.moduleConfig.https.port !== args.moduleConfig.port)) {
                     const server = http.createServer(app);
-                    if (moduleConfig.host === '+') {
-                        server.listen(moduleConfig.port, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                    if (args.moduleConfig.host === '+') {
+                        server.listen(args.moduleConfig.port, () => console.log(`${args.moduleConfig._log} APPLICATION server started ${args.moduleConfig._url}`));
                     }
                     else {
-                        server.listen(moduleConfig.port, moduleConfig.host, () => console.log(`${moduleConfig._log} APPLICATION server started ${moduleConfig._url}`));
+                        server.listen(args.moduleConfig.port, args.moduleConfig.host, () => console.log(`${args.moduleConfig._log} APPLICATION server started ${args.moduleConfig._url}`));
                     }
                 }
             }
             else {
-                console.warn(`${moduleConfig._log} APPLICATION running ${moduleConfig.util.getConfigSources().map(c => c.name)} without Port number, skip launching the express server`);
+                console.warn(`${args.moduleConfig._log} APPLICATION running ${args.moduleConfig.util.getConfigSources().map(c => c.name)} without Port number, skip launching the express server`);
                 process.exit(0);
             }
         }
     }))
         .catch(err => {
-        console.error(`${moduleConfig._log} ${!!test ? 'UNIT-TEST' : 'APPLICATION'} ERROR`, err);
+        console.error(`${args.moduleConfig._log} ${!!args.test ? 'UNIT-TEST' : 'APPLICATION'} ERROR`, err);
         process.exit(1);
     });
 }
 exports.main = main;
-function init(iocContainer, moduleConfig, mongoConfig, creating, created, errorConfigCb, apis) {
+function init(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (mongoConfig && mongoConfig.mongo) {
-            yield MongoClient_1.registerMongoClient(iocContainer, moduleConfig, mongoConfig, DbEntity_1.DefaultMongoClientTYPE);
+        if (args.mongoConfig && args.mongoConfig.mongo) {
+            yield MongoClient_1.registerMongoClient(args.iocContainer, args.moduleConfig, args.mongoConfig, DbEntity_1.DefaultMongoClientTYPE);
         }
         const app = express();
-        const server = new inversify_express_utils_1.InversifyExpressServer(iocContainer, undefined, undefined, app, undefined, false);
-        if (creating) {
-            yield creating(app, moduleConfig, iocContainer);
+        const server = new inversify_express_utils_1.InversifyExpressServer(args.iocContainer, undefined, undefined, app, undefined, false);
+        if (args.creating) {
+            yield args.creating(app, args.moduleConfig, args.iocContainer);
         }
-        create(app, moduleConfig, iocContainer, apis);
-        if (created) {
-            yield created(app, moduleConfig, iocContainer);
+        create(app, args);
+        if (args.created) {
+            yield args.created(app, args.moduleConfig, args.iocContainer);
         }
-        return server.setErrorConfig(errorConfigCb || (a => {
+        return server.setErrorConfig(args.errorConfigCb || (a => {
             // Finally handle the error
             // It's important that this come after the main routes are registered
-            a.use(new ExpressError_1.ExpressError(moduleConfig).handler);
+            a.use(new ExpressError_1.ExpressError(args.moduleConfig).handler);
         })).build();
     });
 }
-function create(app, config, iocContainer, apis) {
+function create(app, args) {
     // Register express.js middlewares
     app.use(bodyparser.urlencoded({ extended: true, limit: '50mb' }));
     app.use(bodyparser.json({ limit: '50mb' }));
     app.use(cookieparser());
     // CORS
-    if (config.cors && config.cors.length > 0) {
-        if (config.cors.indexOf('*') >= 0) {
+    if (args.moduleConfig.cors && args.moduleConfig.cors.length > 0) {
+        if (args.moduleConfig.cors.indexOf('*') >= 0) {
             app.use(DynamicCors_1.DynamicCors.allowAll); // Allow all origin
         }
         else {
-            app.use(new DynamicCors_1.DynamicCors(config.cors).handle); // Allow only specific domain (dynamically)
+            app.use(new DynamicCors_1.DynamicCors(args.moduleConfig.cors).handle); // Allow only specific domain (dynamically)
+        }
+    }
+    // Register Healthz
+    if (!args.disableHealthz) {
+        app.use(args.healthzRootUrl || '/healthz', HealthHandler_1.HealthHandler.getInstance(args.moduleConfig).healthz);
+        if (!!args.apiRootUrl) {
+            app.use(args.apiRootUrl + (args.healthzRootUrl || '/healthz'), HealthHandler_1.HealthHandler.getInstance(args.moduleConfig).healthz);
         }
     }
     // Register API IoC
-    if (apis && apis.length > 0) {
+    if (args.apis && args.apis.length > 0) {
         iocapi.register(app);
-        for (let i = 0, l = apis.length; i < l; i++) {
-            apis[i].register(iocContainer, apis[i].url, iocapi.getIocJwt);
+        for (let i = 0, l = args.apis.length; i < l; i++) {
+            args.apis[i].register(args.iocContainer, args.apis[i].url, iocapi.getIocJwt);
         }
     }
 }
