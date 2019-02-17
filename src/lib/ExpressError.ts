@@ -48,9 +48,10 @@ export class ExpressError {
         } else {
             console.error(`${this.config._log} HTTP.ERROR-${res.statusCode} ${req.method} ${req.originalUrl}`, err);
         }
-        res.send({
+        // Do not use res.send() (due to invalid header sending)
+        res.end(JSON.stringify({
             request: `${req.method} ${req.originalUrl}`,
             error: err instanceof Error ? { message: err.message, name: err.name, stack: err.stack } : err
-        });
+        }));
     }
 }
